@@ -1,28 +1,24 @@
-name: Autograding Tests
-'on':
-- push
-- repository_dispatch
-permissions:
-  checks: write
-  actions: read
-  contents: read
+name: Classroom Autograder
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
-  run-autograding-tests:
+  autograder:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-classroom[bot]'
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: assignment01_test
-      id: assignment01_test
-      uses: classroom-resources/autograding-python-grader@v1
-      with:
-        timeout: 10
-        max-score: 45
-        setup-command: pip install pytest
-    - name: Autograding Reporter
-      uses: classroom-resources/autograding-grading-reporter@v1
-      env:
-        ASSIGNMENT01_TEST_RESULTS: "${{steps.assignment01_test.outputs.result}}"
-      with:
-        runners: assignment01_test
+      - name: Checkout Student Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python and Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip
+          pip3 install pandas
+
+      - name: Run Autograding Tests
+        uses: education/autograding@v1
