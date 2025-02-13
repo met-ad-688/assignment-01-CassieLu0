@@ -169,3 +169,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+_output/questions.csv
+_output/question_tags.csv
+_output/stackoverflow.zip
+*.zip
+*.csv
