@@ -1,30 +1,29 @@
 import pandas as pd
-import requests
 
-# Load the CSV files
-files = ["data/question_tags.csv", "data/questions.csv"]  # Replace with actual file names
+# Define CSV files to process
+files = ["question_tags.csv", "questions.csv"]
 count = 0
+chunk_size = 50000  # Read 50,000 rows at a time for efficiency
 
-for file in files:
+# Function to count occurrences of "GitHub" in chunks
+def count_github_in_csv(file):
+    local_count = 0
     try:
-        # Read CSV file
-        df = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+        for chunk in pd.read_csv(file, encoding="utf-8", low_memory=False, chunksize=chunk_size):
+            # Vectorized string search across all columns
+            local_count += chunk.astype(str).apply(lambda col: col.str.contains("GitHub", case=False, na=False)).any(axis=1).sum()
+    except Exception as e:
+        print(f"Error processing {file}: {e}")
+    return local_count
 
-print("First few rows of DataFrame:")
-print(df.head())  # Display first few rows
-print("\nData types of each column:")
-print(df.dtypes)  # Show column types
+# Process each file
+for file in files:
+    count += count_github_in_csv(file)
 
-if not df.empty:
-    count = df.apply(lambda row: row.astype(str).str.contains("GitHub", case=False, na=False).any(), axis=1).sum()
-    print(f"\nCount of occurrences: {count}")
-else:
-    print("Warning: DataFrame is empty!")
+# Print and save the result
+result = f"Total lines containing 'GitHub': {count}"
+print(result)
 
-# Print the total count
-print(f"Total lines containing 'GitHub': {count}")
-
-# Save the result to a text file
-with open("_output/github_count.txt", "w") as f:
-    f.write(f"Total lines containing 'GitHub': {count}\n")
-
+# Save the output to a file
+with open("github_count.txt", "w") as f:
+    f.write(result + "\n")
